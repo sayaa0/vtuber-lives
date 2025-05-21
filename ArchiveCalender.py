@@ -114,7 +114,7 @@ if channel_id:
                             thumbnail_url = v['snippet']['thumbnails']['default']['url']
                             cols_thumb = st.columns([4, 1])
                             with cols_thumb[0]:
-                                st.image(thumbnail_url, use_column_width=True)
+                                st.image(thumbnail_url, use_container_width=True)
                             with cols_thumb[1]:
                                 with st.expander("➕"):
                                     for emoji in REACTIONS:
