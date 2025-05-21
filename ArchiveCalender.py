@@ -44,7 +44,7 @@ def fetch_videos(channel_id, year, month, max_results=50):
     ).json()
     return res.get('items', [])
 
-def fetch_earliest_year(channel_id):
+def fetch_earliest_date(channel_id):
     res = requests.get(
         "https://www.googleapis.com/youtube/v3/search",
         params={
@@ -57,9 +57,8 @@ def fetch_earliest_year(channel_id):
     ).json()
     items = res.get('items', [])
     if not items:
-        return datetime.now().year
-    dt = datetime.fromisoformat(items[0]['snippet']['publishedAt'].replace("Z", "+00:00"))
-    return dt.year
+        return datetime.now()
+    return datetime.fromisoformat(items[0]['snippet']['publishedAt'].replace("Z", "+00:00"))
 
 # --- Streamlit UI ---
 st.set_page_config(page_title="Vtuber アーカイブカレンダー", layout="wide")
@@ -86,12 +85,10 @@ if channel_id:
     if 'month' not in st.session_state:
         st.session_state.month = datetime.now().month
 
-    earliest_year = fetch_earliest_year(channel_id)
-
+    earliest_date = fetch_earliest_date(channel_id)
+    current_date = datetime.now()
+    year_options = list(range(current_date.year, earliest_date.year - 1, -1))
     nav_col1, nav_col2, nav_col3 = st.columns([1, 1, 8])
-    with nav_col1:
-        st.session_state.year = st.selectbox("年", list(range(datetime.now().year, earliest_year - 1, -1)), index=0, key="year_select", format_func=str)
-        st.session_state.month = st.selectbox("月", list(range(1,13)), index=st.session_state.month-1, key="month_select", format_func=str)
     with nav_col2:
         if st.button("◀ 前の月"):
             if st.session_state.month == 1:
@@ -99,6 +96,9 @@ if channel_id:
                 st.session_state.year -= 1
             else:
                 st.session_state.month -= 1
+    with nav_col1:
+        st.session_state.year = st.selectbox("年", year_options, index=0, key="year_select", format_func=str)
+        st.session_state.month = st.selectbox("月", list(range(1,13)), index=st.session_state.month-1, key="month_select", format_func=str)
     with nav_col3:
         if st.button("次の月 ▶"):
             if st.session_state.month == 12:
@@ -132,7 +132,7 @@ if channel_id:
                             thumbnail_url = v['snippet']['thumbnails']['default']['url']
                             cols_thumb = st.columns([4, 1])
                             with cols_thumb[0]:
-                                st.image(thumbnail_url, use_container_width=True)
+                                st.image(thumbnail_url, use_ccontainer_width=True)
                             with cols_thumb[1]:
                                 with st.expander("➕"):
                                     for emoji in REACTIONS:
