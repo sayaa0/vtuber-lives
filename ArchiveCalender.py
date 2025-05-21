@@ -91,7 +91,6 @@ if channel_id:
     if st.session_state.year not in year_options:
         st.session_state.year = year_options[-1]
 
-    # 月オプションは選択中の年によって制限する
     if st.session_state.year == earliest_date.year and st.session_state.year == current_date.year:
         month_options = list(range(earliest_date.month, current_date.month + 1))
     elif st.session_state.year == earliest_date.year:
@@ -114,10 +113,10 @@ if channel_id:
                 st.session_state.month -= 1
     with nav_col1:
         selected_year = st.selectbox("年", year_options, index=year_options.index(st.session_state.year), key="year_select", format_func=str)
-st.session_state.year = selected_year
-        selected_month = st.selectbox("月", month_options, index=month_options.index(st.session_state.month), key="month_select", format_func=str)
-st.session_state.month = selected_month
+        st.session_state.year = selected_year
 
+        selected_month = st.selectbox("月", month_options, index=month_options.index(st.session_state.month), key="month_select", format_func=str)
+        st.session_state.month = selected_month
 
     with nav_col3:
         if st.button("次の月 ▶"):
