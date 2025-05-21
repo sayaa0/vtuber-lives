@@ -88,6 +88,13 @@ if channel_id:
     earliest_date = fetch_earliest_date(channel_id)
     current_date = datetime.now()
     year_options = list(range(current_date.year, earliest_date.year - 1, -1))
+    month_options = list(range(1, 13))
+
+    if st.session_state.year not in year_options:
+        st.session_state.year = year_options[0]
+    if st.session_state.month not in month_options:
+        st.session_state.month = 1
+
     nav_col1, nav_col2, nav_col3 = st.columns([1, 1, 8])
     with nav_col2:
         if st.button("◀ 前の月"):
@@ -98,7 +105,7 @@ if channel_id:
                 st.session_state.month -= 1
     with nav_col1:
         st.session_state.year = st.selectbox("年", year_options, index=year_options.index(st.session_state.year), key="year_select", format_func=str)
-        st.session_state.month = st.selectbox("月", list(range(1,13)), index=st.session_state.month-1, key="month_select", format_func=str)
+        st.session_state.month = st.selectbox("月", month_options, index=st.session_state.month-1, key="month_select", format_func=str)
     with nav_col3:
         if st.button("次の月 ▶"):
             if st.session_state.month == 12:
@@ -125,19 +132,20 @@ if channel_id:
                 if day == 0:
                     st.write(" ")
                 else:
-                    if st.button(f"{day}日", key=f"btn-{day}"):
+                    if st.button(f"{day}日を表示", key=f"btn-{day}"):
                         st.session_state['selected_day'] = day
                     if day in day_map:
                         for idx, v in enumerate(day_map[day]):
-                            thumbnail_url = v['snippet']['thumbnails']['default']['url']
-                            cols_thumb = st.columns([4, 1])
-                            with cols_thumb[0]:
-                                st.image(thumbnail_url, use_container_width=True)
-                            with cols_thumb[1]:
-                                with st.expander("➕"):
-                                    for emoji in REACTIONS:
-                                        if st.button(emoji, key=f"react-{day}-{idx}-{emoji}"):
-                                            st.success(f"{emoji} をリアクションしました")
+                            thumbnail_url = v['snippet']['thumbnails'].get('default', {}).get('url', None)
+                            if thumbnail_url:
+                                cols_thumb = st.columns([4, 1])
+                                with cols_thumb[0]:
+                                    st.image(thumbnail_url, use_column_width=True)
+                                with cols_thumb[1]:
+                                    with st.expander("➕"):
+                                        for emoji in REACTIONS:
+                                            if st.button(emoji, key=f"react-{day}-{idx}-{emoji}"):
+                                                st.success(f"{emoji} をリアクションしました")
                     else:
                         st.write("配信なし")
 
@@ -147,7 +155,9 @@ if channel_id:
         for v in day_map.get(sd, []):
             cols = st.columns([1,3])
             with cols[0]:
-                st.image(v['snippet']['thumbnails']['medium']['url'], use_container_width=True)
+                thumb = v['snippet']['thumbnails'].get('medium', {}).get('url', None)
+                if thumb:
+                    st.image(thumb, use_column_width=True)
             with cols[1]:
                 title = v['snippet']['title']
                 desc = v['snippet']['description'][:200] + '...'
