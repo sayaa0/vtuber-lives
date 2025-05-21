@@ -113,11 +113,11 @@ if channel_id:
             else:
                 st.session_state.month -= 1
     with nav_col1:
-        selected_year = st.selectbox("年", year_options, key="year_select", format_func=str)
-        st.session_state.year = selected_year
-
+        selected_year = st.selectbox("年", year_options, index=year_options.index(st.session_state.year), key="year_select", format_func=str)
+st.session_state.year = selected_year
         selected_month = st.selectbox("月", month_options, index=month_options.index(st.session_state.month), key="month_select", format_func=str)
-        st.session_state.month = selected_month
+st.session_state.month = selected_month
+
 
     with nav_col3:
         if st.button("次の月 ▶"):
