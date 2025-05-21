@@ -1,112 +1,114 @@
-﻿import streamlit as st
+import streamlit as st
 import calendar
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
 import requests
 
+# === 設定 ===
 YOUTUBE_API_KEY = 'AIzaSyDiB9XuCww8uWmnafqh-ZZjLd0Zed0MAuI'  # ←自分のAPIキーに置き換えてください
 
-def extract_channel_id(url):
-    return url.strip().split("/")[-1]
-
-def fetch_videos(channel_id, year, month):
-    start = datetime(year, month, 1).isoformat("T") + "Z"
-    end = (datetime(year, month, calendar.monthrange(year, month)[1]) + timedelta(days=1)).isoformat("T") + "Z"
-    params = {
-        'key': YOUTUBE_API_KEY,
-        'channelId': channel_id,
-        'part': 'snippet',
-        'order': 'date',
-        'maxResults': 50,
-        'publishedAfter': start,
-        'publishedBefore': end
-    }
-    res = requests.get("https://www.googleapis.com/youtube/v3/search", params=params)
-    return res.json().get("items", [])
-
-# --- UI部分 ---
-st.set_page_config(layout="wide")
-st.title("📅 Vtuber アーカイブカレンダー")
-
-# --- チャンネル検索UI追加 ---
-st.markdown("## 🔍 Vtuberチャンネルを検索して選ぶ")
-search_query = st.text_input("チャンネル名またはVtuber名で検索", value="", placeholder="例: 星街すいせい")
-
-channel_id = None
-
-if search_query:
-    search_res = requests.get(
+# --- YouTube API 呼び出し関数 ---
+def fetch_channels(query, max_results=5):
+    """
+    チャンネル名で検索し、チャンネルIDとタイトルを返す
+    """
+    res = requests.get(
         "https://www.googleapis.com/youtube/v3/search",
         params={
             'key': YOUTUBE_API_KEY,
-            'q': search_query,
+            'q': query,
             'type': 'channel',
             'part': 'snippet',
-            'maxResults': 5
+            'maxResults': max_results
         }
     ).json()
+    return [
+        {
+            'id': item['snippet']['channelId'],
+            'title': item['snippet']['title']
+        }
+        for item in res.get('items', [])
+    ]
 
-    channels = search_res.get("items", [])
 
+def fetch_videos(channel_id, year, month, max_results=50):
+    """
+    指定チャンネルの指定年月の動画一覧を取得する
+    """
+    start = datetime(year, month, 1).isoformat("T") + "Z"
+    end = (datetime(year, month, calendar.monthrange(year, month)[1]) + timedelta(days=1)).isoformat("T") + "Z"
+    res = requests.get(
+        "https://www.googleapis.com/youtube/v3/search",
+        params={
+            'key': YOUTUBE_API_KEY,
+            'channelId': channel_id,
+            'part': 'snippet',
+            'order': 'date',
+            'maxResults': max_results,
+            'publishedAfter': start,
+            'publishedBefore': end
+        }
+    ).json()
+    return res.get('items', [])
+
+# --- Streamlit UI ---
+st.set_page_config(page_title="Vtuber アーカイブカレンダー", layout="wide")
+st.title("📅 Vtuber アーカイブカレンダー")
+
+# 1. チャンネル検索
+st.header("🔍 Vtuberチャンネルを検索して選ぶ")
+search_query = st.text_input("チャンネル名で検索", placeholder="例: 星街すいせい")
+channel_id = None
+if search_query:
+    channels = fetch_channels(search_query)
     if not channels:
-        st.warning("チャンネルが見つかりませんでした。")
-
+        st.warning("チャンネルが見つかりませんでした。別のキーワードを試してください。")
     else:
-        channel_names = [f"{ch['snippet']['title']}（{ch['snippet']['channelId']}）" for ch in channels]
-        selected_index = st.selectbox("該当するチャンネルを選んでください", range(len(channel_names)), format_func=lambda i: channel_names[i])
+        options = [f"{c['title']} ({c['id']})" for c in channels]
+        idx = st.selectbox("候補からチャンネルを選択", range(len(options)), format_func=lambda i: options[i])
+        channel_id = channels[idx]['id']
+        st.success(f"選択されたチャンネル: {channels[idx]['title']} (ID: {channel_id})")
 
-        # 選択されたチャンネルIDを取得
-        channel_id = channels[selected_index]['snippet']['channelId']
-        st.success(f"選択されたチャンネルID: {channel_id}")
+# 2. カレンダー表示
+if channel_id:
+    # 年月の初期設定
+    if 'year' not in st.session_state:
+        st.session_state.year = datetime.now().year
+    if 'month' not in st.session_state:
+        st.session_state.month = datetime.now().month
 
-if channel_url:
-    channel_id = extract_channel_id(channel_url)
-    # --- 年月の状態保持 ---
-    if 'calendar_year' not in st.session_state:
-        st.session_state['calendar_year'] = datetime.now().year
-    if 'calendar_month' not in st.session_state:
-        st.session_state['calendar_month'] = datetime.now().month
-
-    # --- 前月・次月ボタン + 年月セレクター ---
-    col1, col2, col3 = st.columns([2, 2, 2])
+    # 前月・次月操作
+    col1, col2, col3 = st.columns([1,2,1])
     with col1:
         if st.button("◀ 前の月"):
-            if st.session_state['calendar_month'] == 1:
-                st.session_state['calendar_month'] = 12
-                st.session_state['calendar_year'] -= 1
+            if st.session_state.month == 1:
+                st.session_state.month = 12
+                st.session_state.year -= 1
             else:
-                st.session_state['calendar_month'] -= 1
+                st.session_state.month -= 1
     with col3:
-        if st.button("▶ 次の月"):
-            if st.session_state['calendar_month'] == 12:
-                st.session_state['calendar_month'] = 1
-                st.session_state['calendar_year'] += 1
+        if st.button("次の月 ▶"):
+            if st.session_state.month == 12:
+                st.session_state.month = 1
+                st.session_state.year += 1
             else:
-                st.session_state['calendar_month'] += 1
+                st.session_state.month += 1
     with col2:
-        st.session_state['calendar_year'] = st.selectbox(
-            "年", list(range(datetime.now().year, datetime.now().year - 5, -1)),
-            index=list(range(datetime.now().year, datetime.now().year - 5, -1)).index(st.session_state['calendar_year'])
-        )
-        st.session_state['calendar_month'] = st.selectbox(
-            "月", list(range(1, 13)),
-            index=st.session_state['calendar_month'] - 1
-    )
+        st.session_state.year = st.selectbox("年", list(range(datetime.now().year, datetime.now().year-5, -1)), index=0)
+        st.session_state.month = st.selectbox("月", list(range(1,13)), index=st.session_state.month-1)
 
-    # --- 選択された年月を反映 ---
-    year = st.session_state['calendar_year']
-    month = st.session_state['calendar_month']
+    year = st.session_state.year
+    month = st.session_state.month
 
-    # --- YouTube API 呼び出し ---
+    # 動画取得
     videos = fetch_videos(channel_id, year, month)
 
-
-    # 日付ごとのマッピング
+    # 日付ごとにマッピング
     day_map = {}
     for v in videos:
         dt = datetime.fromisoformat(v['snippet']['publishedAt'].replace("Z", "+00:00"))
-        day = dt.day
-        day_map.setdefault(day, []).append(v)
+        day_map.setdefault(dt.day, []).append(v)
 
+    # カレンダー描画
     st.subheader(f"{year}年{month}月の配信カレンダー")
     cal = calendar.Calendar()
     for week in cal.monthdayscalendar(year, month):
@@ -115,28 +117,29 @@ if channel_url:
             with cols[i]:
                 if day == 0:
                     st.write(" ")
-                elif day in day_map:
-                    v = day_map[day][0]
-                    if st.button(f"{day}日", key=f"day-{day}"):
-                        st.session_state['selected_day'] = day
-                    st.image(v['snippet']['thumbnails']['default']['url'], use_container_width=True)
                 else:
-                    st.write(f"{day}日")
+                    if day in day_map:
+                        if st.button(f"{day}日", key=f"day-{day}"):
+                            st.session_state.selected_day = day
+                        # サムネ表示
+                        st.image(day_map[day][0]['snippet']['thumbnails']['default']['url'], use_container_width=True)
+                    else:
+                        st.write(f"{day}日")
 
+    # 日クリック後の詳細表示
     if 'selected_day' in st.session_state:
-        st.subheader(f"{year}年{month}月{st.session_state['selected_day']}日の配信一覧")
-        for v in day_map.get(st.session_state['selected_day'], []):
-            cols = st.columns([1, 3])
+        sd = st.session_state.selected_day
+        st.subheader(f"{year}年{month}月{sd}日の配信一覧")
+        for v in day_map.get(sd, []):
+            cols = st.columns([1,3])
             with cols[0]:
                 st.image(v['snippet']['thumbnails']['medium']['url'], use_container_width=True)
             with cols[1]:
-                st.markdown(f"**{v['snippet']['title']}**")
-                st.caption(v['snippet']['description'][:200] + "...")
-
-                if 'videoId' in v['id']:
-                    video_id = v['id']['videoId']
-                    youtube_url = f"https://www.youtube.com/watch?v={video_id}"
-                    st.markdown(
-                        f'<a href="{youtube_url}" target="_blank" style="color:#1E90FF; font-weight:bold;">▶️ YouTubeでこの配信を観る</a>',
-                        unsafe_allow_html=True
-                    )
+                title = v['snippet']['title']
+                desc = v['snippet']['description'][:200] + '...'
+                st.markdown(f"**{title}**")
+                st.caption(desc)
+                vid = v['id'].get('videoId')
+                if vid:
+                    url = f"https://www.youtube.com/watch?v={vid}"
+                    st.markdown(f"[▶️ YouTubeで観る]({url})")
