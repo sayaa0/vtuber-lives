@@ -110,7 +110,7 @@ if channel_id:
                     if day in day_map:
                         for idx, v in enumerate(day_map[day]):
                             thumbnail_url = v['snippet']['thumbnails']['default']['url']
-                            st.image(thumbnail_url, use_column_width=True)
+                            st.image(thumbnail_url, use_container_width=True)
                             for emoji in REACTIONS:
                                 if st.button(emoji, key=f"react-{day}-{idx}-{emoji}"):
                                     st.success(f"{emoji} をリアクションしました")
