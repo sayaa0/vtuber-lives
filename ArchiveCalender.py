@@ -153,7 +153,7 @@ if channel_id:
                             if thumbnail_url:
                                 cols_thumb = st.columns([4, 1])
                                 with cols_thumb[0]:
-                                    st.image(thumbnail_url, use_column_width=True)
+                                    st.image(thumbnail_url, use_container_width=True)
                                 with cols_thumb[1]:
                                     with st.expander("➕"):
                                         for emoji in REACTIONS:
@@ -170,7 +170,7 @@ if channel_id:
             with cols[0]:
                 thumb = v['snippet']['thumbnails'].get('medium', {}).get('url', None)
                 if thumb:
-                    st.image(thumb, use_column_width=True)
+                    st.image(thumb, use_container_width=True)
             with cols[1]:
                 title = v['snippet']['title']
                 desc = v['snippet']['description'][:200] + '...'
