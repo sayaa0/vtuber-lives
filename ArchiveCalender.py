@@ -175,3 +175,5 @@ if channel_id:
                 if vid:
                     url = f"https://www.youtube.com/watch?v={vid}"
                     st.markdown(f"[▶️ YouTubeで観る]({url})")
+                # リアクションの集計（仮想カウント表示）
+                st.caption("リアクション: " + " ".join([f"{emoji} 0" for emoji in REACTIONS]))
