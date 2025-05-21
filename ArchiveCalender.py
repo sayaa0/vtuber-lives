@@ -87,17 +87,19 @@ if channel_id:
 
     earliest_date = fetch_earliest_date(channel_id)
     current_date = datetime.now()
-    year_options = list(range(current_date.year, earliest_date.year - 1, -1))
+    year_options = list(range(earliest_date.year, current_date.year + 1))
     if st.session_state.year not in year_options:
-        st.session_state.year = year_options[0]
+        st.session_state.year = year_options[-1]
 
     # 月オプションは選択中の年によって制限する
-    if st.session_state.year == earliest_date.year:
-        month_options = list(range(current_date.month, earliest_date.month - 1, -1)) if current_date.year == earliest_date.year else list(range(12, earliest_date.month - 1, -1))
+    if st.session_state.year == earliest_date.year and st.session_state.year == current_date.year:
+        month_options = list(range(earliest_date.month, current_date.month + 1))
+    elif st.session_state.year == earliest_date.year:
+        month_options = list(range(earliest_date.month, 13))
     elif st.session_state.year == current_date.year:
-        month_options = list(range(current_date.month, 0, -1))
+        month_options = list(range(1, current_date.month + 1))
     else:
-        month_options = list(range(12, 0, -1))
+        month_options = list(range(1, 13))
 
     if st.session_state.month not in month_options:
         st.session_state.month = month_options[0]
@@ -111,8 +113,8 @@ if channel_id:
             else:
                 st.session_state.month -= 1
     with nav_col1:
-        st.session_state.year = st.selectbox("年", year_options, index=year_options.index(st.session_state.year), key="year_select", format_func=str)
-        st.session_state.month = st.selectbox("月", month_options, index=0, key="month_select", format_func=str)
+        st.session_state.year = st.selectbox("年", year_options, key="year_select", format_func=str)
+        st.session_state.month = st.selectbox("月", month_options, index=month_options.index(st.session_state.month), key="month_select", format_func=str)
     with nav_col3:
         if st.button("次の月 ▶"):
             if st.session_state.month == 12:
@@ -147,7 +149,7 @@ if channel_id:
                             if thumbnail_url:
                                 cols_thumb = st.columns([4, 1])
                                 with cols_thumb[0]:
-                                    st.image(thumbnail_url, use_container_width=True)
+                                    st.image(thumbnail_url, use_column_width=True)
                                 with cols_thumb[1]:
                                     with st.expander("➕"):
                                         for emoji in REACTIONS:
@@ -164,7 +166,7 @@ if channel_id:
             with cols[0]:
                 thumb = v['snippet']['thumbnails'].get('medium', {}).get('url', None)
                 if thumb:
-                    st.image(thumb, use_container_width=True)
+                    st.image(thumb, use_column_width=True)
             with cols[1]:
                 title = v['snippet']['title']
                 desc = v['snippet']['description'][:200] + '...'
