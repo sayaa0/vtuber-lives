@@ -106,14 +106,20 @@ if channel_id:
                 if day == 0:
                     st.write(" ")
                 else:
+                    if st.button(f"{day}日", key=f"btn-{day}"):
+                        st.session_state['selected_day'] = day
                     st.markdown(f"**{day}日**")
                     if day in day_map:
                         for idx, v in enumerate(day_map[day]):
                             thumbnail_url = v['snippet']['thumbnails']['default']['url']
-                            st.image(thumbnail_url, use_container_width=True)
-                            for emoji in REACTIONS:
-                                if st.button(emoji, key=f"react-{day}-{idx}-{emoji}"):
-                                    st.success(f"{emoji} をリアクションしました")
+                            cols_thumb = st.columns([4, 1])
+                            with cols_thumb[0]:
+                                st.image(thumbnail_url, use_column_width=True)
+                            with cols_thumb[1]:
+                                with st.expander("➕"):
+                                    for emoji in REACTIONS:
+                                        if st.button(emoji, key=f"react-{day}-{idx}-{emoji}"):
+                                            st.success(f"{emoji} をリアクションしました")
                     else:
                         st.write("配信なし")
 
