@@ -151,11 +151,11 @@ if channel_id:
                                     st.image(thumbnail_url, use_container_width=True)
                                 with cols_thumb[1]:
                                     with st.expander("➕", expanded=False):
-                                        reaction_row = st.columns(len(REACTIONS))
-                                        for j, emoji in enumerate(REACTIONS):
-                                                                                                with reaction_row[j]:
-                                                            if st.button(emoji, key=f"react-{day}-{idx}-{emoji}"):
-                                                                                                        st.success(f"{emoji} をリアクションしました")
+    reaction_row = st.columns(len(REACTIONS))
+    for j, emoji in enumerate(REACTIONS):
+        with reaction_row[j]:
+            if st.button(emoji, key=f"react-{day}-{idx}-{emoji}"):
+                st.success(f"{emoji} をリアクションしました")
                     else:
                         st.write("配信なし")
 
