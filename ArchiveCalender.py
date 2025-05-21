@@ -44,6 +44,23 @@ def fetch_videos(channel_id, year, month, max_results=50):
     ).json()
     return res.get('items', [])
 
+def fetch_earliest_year(channel_id):
+    res = requests.get(
+        "https://www.googleapis.com/youtube/v3/search",
+        params={
+            'key': YOUTUBE_API_KEY,
+            'channelId': channel_id,
+            'part': 'snippet',
+            'order': 'date',
+            'maxResults': 1
+        }
+    ).json()
+    items = res.get('items', [])
+    if not items:
+        return datetime.now().year
+    dt = datetime.fromisoformat(items[0]['snippet']['publishedAt'].replace("Z", "+00:00"))
+    return dt.year
+
 # --- Streamlit UI ---
 st.set_page_config(page_title="Vtuber アーカイブカレンダー", layout="wide")
 st.title("📅 Vtuber アーカイブカレンダー")
@@ -69,24 +86,28 @@ if channel_id:
     if 'month' not in st.session_state:
         st.session_state.month = datetime.now().month
 
-    col1, col2, col3 = st.columns([1,2,1])
-    with col1:
-        if st.button("◀ 前の月"):
-            if st.session_state.month == 1:
-                st.session_state.month = 12
-                st.session_state.year -= 1
-            else:
-                st.session_state.month -= 1
-    with col3:
-        if st.button("次の月 ▶"):
-            if st.session_state.month == 12:
-                st.session_state.month = 1
-                st.session_state.year += 1
-            else:
-                st.session_state.month += 1
-    with col2:
-        st.session_state.year = st.selectbox("年", list(range(datetime.now().year, 2005, -1)), index=0, key="year_select", format_func=str)
+    earliest_year = fetch_earliest_year(channel_id)
+
+    nav_col1, nav_col2 = st.columns([2, 8])
+    with nav_col1:
+        st.session_state.year = st.selectbox("年", list(range(datetime.now().year, earliest_year - 1, -1)), index=0, key="year_select", format_func=str)
         st.session_state.month = st.selectbox("月", list(range(1,13)), index=st.session_state.month-1, key="month_select", format_func=str)
+    with nav_col2:
+        btn_col1, btn_col2 = st.columns([1, 1])
+        with btn_col1:
+            if st.button("◀ 前の月"):
+                if st.session_state.month == 1:
+                    st.session_state.month = 12
+                    st.session_state.year -= 1
+                else:
+                    st.session_state.month -= 1
+        with btn_col2:
+            if st.button("次の月 ▶"):
+                if st.session_state.month == 12:
+                    st.session_state.month = 1
+                    st.session_state.year += 1
+                else:
+                    st.session_state.month += 1
 
     year = st.session_state.year
     month = st.session_state.month
