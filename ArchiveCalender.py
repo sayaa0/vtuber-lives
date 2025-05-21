@@ -85,8 +85,8 @@ if channel_id:
             else:
                 st.session_state.month += 1
     with col2:
-        st.session_state.year = st.selectbox("年", list(range(datetime.now().year, datetime.now().year-5, -1)), index=0)
-        st.session_state.month = st.selectbox("月", list(range(1,13)), index=st.session_state.month-1)
+        st.session_state.year = st.selectbox("年", list(range(datetime.now().year, 2005, -1)), index=0, key="year_select", format_func=str)
+        st.session_state.month = st.selectbox("月", list(range(1,13)), index=st.session_state.month-1, key="month_select", format_func=str)
 
     year = st.session_state.year
     month = st.session_state.month
@@ -106,7 +106,7 @@ if channel_id:
                 if day == 0:
                     st.write(" ")
                 else:
-                    if st.button(f"{day}日を表示", key=f"btn-{day}"):
+                    if st.button(f"{day}日", key=f"btn-{day}"):
                         st.session_state['selected_day'] = day
                     if day in day_map:
                         for idx, v in enumerate(day_map[day]):
