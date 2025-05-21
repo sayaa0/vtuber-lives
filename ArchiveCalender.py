@@ -140,7 +140,7 @@ if channel_id:
                 if day == 0:
                     st.write(" ")
                 else:
-                    if st.button(f"{day}日を表示", key=f"btn-{day}"):
+                    if st.button(f"{day}日", key=f"btn-{day}"):
                         st.session_state['selected_day'] = day
                     if day in day_map:
                         for idx, v in enumerate(day_map[day]):
