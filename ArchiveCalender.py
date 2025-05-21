@@ -87,15 +87,11 @@ if channel_id:
 
     earliest_date = fetch_earliest_date(channel_id)
     current_date = datetime.now()
-    year_options = list(range(earliest_date.year, current_date.year + 1))
+    year_options = list(range(2006, current_date.year + 1))
     if st.session_state.year not in year_options:
         st.session_state.year = year_options[-1]
 
-    if st.session_state.year == earliest_date.year and st.session_state.year == current_date.year:
-        month_options = list(range(earliest_date.month, current_date.month + 1))
-    elif st.session_state.year == earliest_date.year:
-        month_options = list(range(earliest_date.month, 13))
-    elif st.session_state.year == current_date.year:
+    if st.session_state.year == current_date.year:
         month_options = list(range(1, current_date.month + 1))
     else:
         month_options = list(range(1, 13))
