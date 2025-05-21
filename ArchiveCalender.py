@@ -27,7 +27,36 @@ def fetch_videos(channel_id, year, month):
 st.set_page_config(layout="wide")
 st.title("📅 Vtuber アーカイブカレンダー")
 
-channel_url = st.text_input("YouTubeチャンネルのURLを入力")
+# --- チャンネル検索UI追加 ---
+st.markdown("## 🔍 Vtuberチャンネルを検索して選ぶ")
+search_query = st.text_input("チャンネル名またはVtuber名で検索", value="", placeholder="例: 星街すいせい")
+
+channel_id = None
+
+if search_query:
+    search_res = requests.get(
+        "https://www.googleapis.com/youtube/v3/search",
+        params={
+            'key': YOUTUBE_API_KEY,
+            'q': search_query,
+            'type': 'channel',
+            'part': 'snippet',
+            'maxResults': 5
+        }
+    ).json()
+
+    channels = search_res.get("items", [])
+
+    if not channels:
+        st.warning("チャンネルが見つかりませんでした。")
+
+    else:
+        channel_names = [f"{ch['snippet']['title']}（{ch['snippet']['channelId']}）" for ch in channels]
+        selected_index = st.selectbox("該当するチャンネルを選んでください", range(len(channel_names)), format_func=lambda i: channel_names[i])
+
+        # 選択されたチャンネルIDを取得
+        channel_id = channels[selected_index]['snippet']['channelId']
+        st.success(f"選択されたチャンネルID: {channel_id}")
 
 if channel_url:
     channel_id = extract_channel_id(channel_url)
