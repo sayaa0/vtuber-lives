@@ -88,26 +88,24 @@ if channel_id:
 
     earliest_year = fetch_earliest_year(channel_id)
 
-    nav_col1, nav_col2 = st.columns([2, 8])
+    nav_col1, nav_col2, nav_col3 = st.columns([1, 1, 8])
     with nav_col1:
         st.session_state.year = st.selectbox("年", list(range(datetime.now().year, earliest_year - 1, -1)), index=0, key="year_select", format_func=str)
         st.session_state.month = st.selectbox("月", list(range(1,13)), index=st.session_state.month-1, key="month_select", format_func=str)
     with nav_col2:
-        btn_col1, btn_col2 = st.columns([1, 1])
-        with btn_col1:
-            if st.button("◀ 前の月"):
-                if st.session_state.month == 1:
-                    st.session_state.month = 12
-                    st.session_state.year -= 1
-                else:
-                    st.session_state.month -= 1
-        with btn_col2:
-            if st.button("次の月 ▶"):
-                if st.session_state.month == 12:
-                    st.session_state.month = 1
-                    st.session_state.year += 1
-                else:
-                    st.session_state.month += 1
+        if st.button("◀ 前の月"):
+            if st.session_state.month == 1:
+                st.session_state.month = 12
+                st.session_state.year -= 1
+            else:
+                st.session_state.month -= 1
+    with nav_col3:
+        if st.button("次の月 ▶"):
+            if st.session_state.month == 12:
+                st.session_state.month = 1
+                st.session_state.year += 1
+            else:
+                st.session_state.month += 1
 
     year = st.session_state.year
     month = st.session_state.month
