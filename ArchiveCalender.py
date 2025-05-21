@@ -149,11 +149,11 @@ if channel_id:
                                 cols_thumb = st.columns([4, 1])
                                 with cols_thumb[0]:
                                     st.image(thumbnail_url, use_container_width=True)
-                                with cols_thumb[1]:
-    with st.expander("➕", expanded=False):
-        for emoji in REACTIONS:
-            if st.button(emoji, key=f"react-{day}-{idx}-{emoji}"):
-                st.success(f"{emoji} をリアクションしました")
+    with cols_thumb[1]:
+        with st.expander("➕", expanded=False):
+            for emoji in REACTIONS:
+                if st.button(emoji, key=f"react-{day}-{idx}-{emoji}"):
+                    st.success(f"{emoji} をリアクションしました")
 
                     else:
                         st.write("配信なし")
