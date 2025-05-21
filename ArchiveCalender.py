@@ -155,8 +155,8 @@ if channel_id:
                 if st.button(emoji, key=f"react-{day}-{idx}-{emoji}"):
                     st.success(f"{emoji} をリアクションしました")
 
-                    else:
-                        st.write("配信なし")
+                        else:
+                            st.write("配信なし")
 
     if 'selected_day' in st.session_state:
         sd = st.session_state.selected_day
