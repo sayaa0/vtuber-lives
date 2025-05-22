@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import requests
 
 # === 設定 ===
-YOUTUBE_API_KEY = 'AIzaSyCXGOuZlT2XDjFhMj4Mh9fXSzFLrY_hKT4'  # ←自分のAPIキーに置き換えてください
+YOUTUBE_API_KEY = st.secrets["YOUTUBE_API_KEY"]   # ←自分のAPIキーに置き換えてください
 REACTIONS = ["🔥", "😢", "❤", "😂", "👏", "👍"]  # 利用可能なリアクション一覧
 
 # --- YouTube API 呼び出し関数 ---
