@@ -9,7 +9,7 @@ REACTIONS = ["🔥", "😢", "❤", "😂", "👏", "👍"]  # 利用可能な�
 
 # --- YouTube API 呼び出し関数 ---
 def fetch_channels(query, max_results=5):
-    st.write(f"DEBUG: fetch_channels called with query: {query}") # デバッグ用
+    #st.write(f"DEBUG: fetch_channels called with query: {query}") # デバッグ用
     params = {
         'key': YOUTUBE_API_KEY,
         'q': query,
@@ -17,7 +17,7 @@ def fetch_channels(query, max_results=5):
         'part': 'snippet',
         'maxResults': max_results
     }
-    st.write(f"DEBUG: API params: {params}") # デバッグ用
+    #st.write(f"DEBUG: API params: {params}") # デバッグ用
     try:
         response = requests.get(
             "https://www.googleapis.com/youtube/v3/search",
@@ -25,7 +25,7 @@ def fetch_channels(query, max_results=5):
         )
         response.raise_for_status() # HTTPエラーがあれば例外を発生
         res_json = response.json()
-        st.write(f"DEBUG: API response: {res_json}") # デバッグ用
+        #st.write(f"DEBUG: API response: {res_json}") # デバッグ用
     except requests.exceptions.RequestException as e:
         st.error(f"APIリクエストエラー: {e}")
         return []
