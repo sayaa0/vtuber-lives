@@ -9,22 +9,37 @@ REACTIONS = ["🔥", "😢", "❤", "😂", "👏", "👍"]  # 利用可能な�
 
 # --- YouTube API 呼び出し関数 ---
 def fetch_channels(query, max_results=5):
-    res = requests.get(
-        "https://www.googleapis.com/youtube/v3/search",
-        params={
-            'key': YOUTUBE_API_KEY,
-            'q': query,
-            'type': 'channel',
-            'part': 'snippet',
-            'maxResults': max_results
-        }
-    ).json()
+    st.write(f"DEBUG: fetch_channels called with query: {query}") # デバッグ用
+    params = {
+        'key': YOUTUBE_API_KEY,
+        'q': query,
+        'type': 'channel',
+        'part': 'snippet',
+        'maxResults': max_results
+    }
+    st.write(f"DEBUG: API params: {params}") # デバッグ用
+    try:
+        response = requests.get(
+            "https://www.googleapis.com/youtube/v3/search",
+            params=params
+        )
+        response.raise_for_status() # HTTPエラーがあれば例外を発生
+        res_json = response.json()
+        st.write(f"DEBUG: API response: {res_json}") # デバッグ用
+    except requests.exceptions.RequestException as e:
+        st.error(f"APIリクエストエラー: {e}")
+        return []
+    except ValueError as e: # JSONデコードエラー
+        st.error(f"APIレスポンスのJSONデコードエラー: {e}")
+        st.error(f"API raw response: {response.text}") # 生のレスポンスを表示
+        return []
+
     return [
         {
             'id': item['snippet']['channelId'],
             'title': item['snippet']['title']
         }
-        for item in res.get('items', [])
+        for item in res_json.get('items', [])
     ]
 
 def fetch_videos(channel_id, year, month, max_results=50):
