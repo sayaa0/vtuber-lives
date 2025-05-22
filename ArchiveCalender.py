@@ -185,7 +185,7 @@ if channel_id:
                                 for r_idx, emoji in enumerate(REACTIONS):
                                     with reaction_cols[r_idx]:
                                         if st.button(emoji, key=f"react_emoji_{video_id}_{emoji}", use_container_width=True):
-                                            st.success(f"{v_data['snippet']['title']} に {emoji} でリアクションしました！")
+                                            st.success(f"{emoji} でリアクションしました！")
                                             # TODO: ここにリアクションを保存・集計する処理を追加
                                             # st.session_state[reaction_toggle_key] = False # リアクション後は閉じる場合
                             
