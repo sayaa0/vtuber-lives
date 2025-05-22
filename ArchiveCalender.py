@@ -211,12 +211,15 @@ if channel_id:
                             if st.button("リアクション", key=f"toggle_btn_{video_id}", use_container_width=True):
                                 st.session_state[reaction_toggle_key] = not st.session_state[reaction_toggle_key]
 
+                               # リアクション絵文字の表示 (トグルがONの場合)
                             if st.session_state[reaction_toggle_key]:
                                 reaction_cols = st.columns(len(REACTIONS))
                                 for r_idx, emoji in enumerate(REACTIONS):
                                     with reaction_cols[r_idx]:
                                         if st.button(emoji, key=f"react_emoji_{video_id}_{emoji}", use_container_width=True):
                                             st.success(f"{v_data['snippet']['title']} に {emoji} でリアクションしました！")
+                                            # TODO: ここにリアクションを保存・集計する処理を追加
+                                            # st.session_state[reaction_toggle_key] = False # リアクション後は閉じる場合
                             # --- ここまで動画情報の表示 ---
                             
                     else: # 配信がない日
