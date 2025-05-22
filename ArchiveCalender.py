@@ -134,27 +134,50 @@ if channel_id:
     st.subheader(f"{year}年{month}月の配信カレンダー")
     cal = calendar.Calendar()
     for week in cal.monthdayscalendar(year, month):
-        cols = st.columns(7)
+        cols_week = st.columns(7)  # 週の各日を表示するためのカラム
         for i, day in enumerate(week):
-            with cols[i]:
+            with cols_week[i]:
                 if day == 0:
                     st.write(" ")
                 else:
-                    if st.button(f"{day}日", key=f"btn-{day}"):
+                    # 日付ボタン (クリックでその日の配信一覧へ)
+                    if st.button(f"{day}日", key=f"cal_day_btn-{year}-{month}-{day}", use_container_width=True):
                         st.session_state['selected_day'] = day
+                    
                     if day in day_map:
-                        for idx, v in enumerate(day_map[day]):
-                            thumbnail_url = v['snippet']['thumbnails'].get('default', {}).get('url', None)
+                        for video_idx, v_data in enumerate(day_map[day]):
+                            video_id = v_data['id'].get('videoId', f"{year}-{month}-{day}-{video_idx}") # 動画ごとのユニークID (videoIdがない場合も考慮)
+                            thumbnail_url = v_data['snippet']['thumbnails'].get('default', {}).get('url', None)
+                            
                             if thumbnail_url:
-                                cols_thumb = st.columns([4, 1])
-                                with cols_thumb[0]:
-                                    st.image(thumbnail_url, use_container_width=True)
-                                with cols_thumb[1]:
-                                    with st.expander("➕"):
-                                        for emoji in REACTIONS:
-                                            if st.button(emoji, key=f"react-{day}-{idx}-{emoji}"):
-                                                st.success(f"{emoji} をリアクションしました")
-                    else:
+                                st.image(thumbnail_url, use_container_width=True)
+
+                            # リアクション機能のUI変更
+                            # 各動画のリアクション展開状態を管理するセッションステートキー
+                            reaction_toggle_key = f"reaction_toggle_{video_id}"
+
+                            # セッションステートの初期化
+                            if reaction_toggle_key not in st.session_state:
+                                st.session_state[reaction_toggle_key] = False
+
+                            # 「リアクション」トグルボタン
+                            if st.button("リアクション", key=f"toggle_btn_{video_id}", use_container_width=True):
+                                st.session_state[reaction_toggle_key] = not st.session_state[reaction_toggle_key]
+
+                            # リアクション絵文字の表示 (トグルがONの場合)
+                            if st.session_state[reaction_toggle_key]:
+                                reaction_cols = st.columns(len(REACTIONS))
+                                for r_idx, emoji in enumerate(REACTIONS):
+                                    with reaction_cols[r_idx]:
+                                        if st.button(emoji, key=f"react_emoji_{video_id}_{emoji}", use_container_width=True):
+                                            st.success(f"{v_data['snippet']['title']} に {emoji} でリアクションしました！")
+                                            # TODO: ここにリアクションを保存・集計する処理を追加
+                                            # st.session_state[reaction_toggle_key] = False # リアクション後は閉じる場合
+                            
+                            # 動画タイトルなどを表示する場合はここに追加
+                            # st.caption(v_data['snippet']['title'][:30] + "...") # 短縮タイトルなど
+
+                    else: # day in day_map
                         st.write("配信なし")
 
     if 'selected_day' in st.session_state:
