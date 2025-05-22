@@ -176,7 +176,7 @@ if channel_id:
                                 st.session_state[reaction_toggle_key] = False
 
                             # 「リアクション」トグルボタン
-                            if st.button("リアクション", key=f"toggle_btn_{video_id}", use_container_width=True):
+                            if st.button("➕", key=f"toggle_btn_{video_id}", use_container_width=True):
                                 st.session_state[reaction_toggle_key] = not st.session_state[reaction_toggle_key]
 
                             # リアクション絵文字の表示 (トグルがONの場合)
